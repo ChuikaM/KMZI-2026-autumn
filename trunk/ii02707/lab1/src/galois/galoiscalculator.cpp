@@ -15,7 +15,7 @@ GALOIS_INT galois::GaloisCalculator::multiply(GALOIS_INT a, GALOIS_INT b, GALOIS
     }
 
     const auto reduce = [](GALOIS_INT P_x, GALOIS_INT p_x) -> GALOIS_INT {
-        // When FIELD_POWER = 8 -> 2*FIELD_POWER-1 = 14 
+        // When FIELD_POWER = 8 -> 2*FIELD_POWER-2 = 14 
         for(int i = 2*FIELD_POWER-2; i >= FIELD_POWER; i--) { 
             if(P_x & (1 << i)) {
                 P_x ^= (p_x << (i - FIELD_POWER));
@@ -28,5 +28,15 @@ GALOIS_INT galois::GaloisCalculator::multiply(GALOIS_INT a, GALOIS_INT b, GALOIS
 
 GALOIS_INT galois::GaloisCalculator::inverse(GALOIS_INT a, GALOIS_INT p_x)
 {
-    return GALOIS_INT();
+    GALOIS_INT result = 1;
+    GALOIS_INT t = a;
+
+    GALOIS_INT exp = (1 << FIELD_POWER) - 2;
+    for(auto i = 0; i < FIELD_POWER; i++) {
+        if(exp & (1 << i)) {
+            result = multiply(result, t, p_x);
+        }
+        t = multiply(t, t, p_x);
+    }
+    return result;
 }
