@@ -23,7 +23,8 @@ GALOIS_INT galois::GaloisCalculator::multiply(GALOIS_INT a, GALOIS_INT b, GALOIS
         }
         return P_x;
     };
-    return reduce(P_x, p_x);
+    GALOIS_INT C_x = reduce(P_x, p_x);
+    return C_x;
 }
 
 GALOIS_INT galois::GaloisCalculator::inverse(GALOIS_INT a, GALOIS_INT p_x)
