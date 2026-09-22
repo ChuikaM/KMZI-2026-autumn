@@ -12,16 +12,13 @@ constexpr uint8_t kReferenceKey[Belt::kKeyBytes] = {
 };
 
 [[nodiscard]] inline uint32_t rotl32(uint32_t x, unsigned n) noexcept {
-    const uint64_t xu = static_cast<uint64_t>(x);
-    const uint64_t r  = (xu << n) | (xu >> ((32u - n) & 31u));
-    return static_cast<uint32_t>(r);
+    n &= 31u;
+    return (x << n) | (x >> ((32u - n) & 31u));
 }
 
 [[nodiscard]] inline uint32_t rotr32(uint32_t x, unsigned n) noexcept {
-    const uint64_t xu = static_cast<uint64_t>(x);
-    const unsigned m = (32u - n) & 31u;
-    const uint64_t r = (xu << m) | (xu >> ((32u - m) & 31u));
-    return static_cast<uint32_t>(r);
+    n &= 31u;
+    return (x >> n) | (x << ((32u - n) & 31u));
 }
 
 }
