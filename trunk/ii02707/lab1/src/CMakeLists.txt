@@ -1,18 +1,22 @@
 cmake_minimum_required(VERSION 3.25)
-project(lab1_ii02707_src)
+project(belt_gcm LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(PROJECT_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-)
+add_subdirectory(crypto)
+add_subdirectory(demo)
+add_subdirectory(test)
 
-add_subdirectory(belt)
-add_subdirectory(galois)
 
-add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
+add_executable(${PROJECT_NAME} main.cpp)
+
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-   galois
+    gf256
+    belt
+    gcm
+    demo
+    test
 )

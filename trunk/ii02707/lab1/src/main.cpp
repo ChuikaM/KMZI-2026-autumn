@@ -1,11 +1,14 @@
 #include <iostream>
-#include <galoiscalculator.hpp>
+
+#include <demo.hpp>
+#include <test.hpp>
 
 int main() {
+    const int demo_rc = crypto::demo::run_demo();
+    if (demo_rc != 0) {
+        std::cerr << "[!] Демонстрация завершилась с ошибкой.\n";
+        return demo_rc;
+    }
 
-    GALOIS_FIELD p_x = "x^8+x^5+x^2+x+1";
-    GALOIS_FIELD ghash = "x^128+x^7+x^2+x+1";
-
-    std::cout << "Result:" << galois::galois_field_to_int("x^8+x^5+x^3+x+1");
-    return 0;
+    return run_all_extra_tests();
 }
