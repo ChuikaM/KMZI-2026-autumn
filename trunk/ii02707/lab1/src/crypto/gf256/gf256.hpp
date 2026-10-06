@@ -8,13 +8,13 @@ class GF256 {
 public:
     explicit GF256(uint16_t p_x) noexcept;
 
+    [[nodiscard]] uint8_t xtime(uint8_t b) const noexcept;
+    
     [[nodiscard]] static uint8_t add(uint8_t a, uint8_t b) noexcept {
         return static_cast<uint8_t>(a ^ b);
     }
 
     [[nodiscard]] uint8_t multiply(uint8_t a, uint8_t b) const noexcept;
-
-    [[nodiscard]] uint8_t xtime(uint8_t b) const noexcept;
 
     [[nodiscard]] uint8_t inverse(uint8_t a) const noexcept;
 
