@@ -20,14 +20,3 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     demo
     test
 )
-
-Visual Studio 2017/2019/2022
-/ sln project
-/ exe file
-/ tests 
-
-
-MinGW
-/ exe
-Clang
-/ exe
