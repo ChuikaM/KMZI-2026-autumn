@@ -205,7 +205,7 @@ static bool test_constant_time(const RSAPublicKey& pub, const RSAPrivateKey& pri
 
 int main() {
     std::cout << "========================================================\n";
-    std::cout << " RSA-3072 + SHA3-256 + OAEP + RSA Blinding (variant 4)\n";
+    std::cout << " RSA-3072 + SHA3-256 + OAEP "
     std::cout << "========================================================\n\n";
 
     int passed = 0, total = 0;

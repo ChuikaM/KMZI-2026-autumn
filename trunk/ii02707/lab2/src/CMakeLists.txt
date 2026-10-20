@@ -4,8 +4,6 @@ project(RSA_OAEP_Blinding CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# OpenSSL используется ТОЛЬКО как BigInt-библиотека (арифметика больших чисел).
-# Вся криптография (SHA3, OAEP, RSA, Blinding) реализована вручную.
 find_package(OpenSSL REQUIRED)
 
 add_executable(rsa_lab
