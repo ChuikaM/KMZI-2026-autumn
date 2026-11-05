@@ -2,9 +2,8 @@
 #include <structures.hpp>
 #include <cstdlib>
 
-void eddsa_keygen(Point *A, BigInt d, const Params *C);
-void eddsa_sign(Point *R, BigInt *S, const BigInt d,
-                const char *M, size_t len, const Params *C);
-void eddsa_verify(const Point *R, const BigInt S,
-                 const char *M, size_t len,
-                 const Point *A, const Params *C);
+void eddsa_keygen(uint8_t pk[32], uint8_t sk[64], const uint8_t seed[32]);
+void eddsa_sign(uint8_t sig[64], const uint8_t *m, size_t mlen,
+                const uint8_t pk[32], const uint8_t sk[64]);
+int eddsa_verify(const uint8_t sig[64], const uint8_t *m, size_t mlen,
+                 const uint8_t pk[32]);

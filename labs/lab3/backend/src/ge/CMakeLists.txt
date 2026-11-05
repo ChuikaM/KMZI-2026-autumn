@@ -7,4 +7,4 @@ add_library(${PROJECT_NAME} PUBLIC
   ge.cpp
 )
 target_link_directories(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(${PROJECT_NAME} PUBLIC fe)
+target_link_libraries(${PROJECT_NAME} PUBLIC fe data structures)

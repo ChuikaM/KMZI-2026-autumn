@@ -1,20 +1,19 @@
 #pragma once
+#include <boost/multiprecision/cpp_int.hpp>
 
-using BigInt = int;
+using fe = boost::multiprecision::uint256_t;
 using Bit = bool;
 
-struct Point {
-  BigInt x;
-  BigInt y;
-  BigInt z;
+typedef struct ge {
+  fe x;
+  fe y;
+  fe z;
 };
 
-struct Params {
-  BigInt a;
-  BigInt d;
-  BigInt p;
-};
+using scalar = fe;
 
-typedef struct { uint64_t v[4]; } fe;      // элемент GF(2^255-19)
-typedef struct { fe X, Y, Z; } ge;         // точка (X:Y:Z)
-typedef struct { uint64_t v[4]; } scalar; 
+typedef struct Params {
+  fe a;
+  fe d;
+  fe p;
+};
