@@ -44,7 +44,6 @@ fe fe_sq(fe a, fe p) {
     return fe_mul(a, a, p);
 }
 
-// публичный показатель e — переменное время допустимо
 fe fe_pow(fe a, fe p, fe e) {
     fe result = 1;
     fe base = a;
