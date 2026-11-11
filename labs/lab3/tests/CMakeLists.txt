@@ -1,18 +1,3 @@
-cmake_minimum_required(VERSION 3.24)
-project(cli)
-
-set(CMAKE_CXX_STANDARD 20)
-
-add_library(${PROJECT_NAME} PUBLIC
-  main.cpp
-)
-
-target_link_directories(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(${PROJECT_NAME} PUBLIC 
-  fe 
-  ge
-  sc 
-  sha512 
-  data 
-  structures
-)
+add_executable(test_ed25519 test_ed25519.cpp)
+target_link_libraries(test_ed25519 PRIVATE ed25519_core)
+add_test(NAME ed25519_tests COMMAND test_ed25519)
