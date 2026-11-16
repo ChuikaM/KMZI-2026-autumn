@@ -1,5 +1,52 @@
+<p align="center"> Министерство образования Республики Беларусь</p>
+<p align="center">Учреждение образования</p>
+<p align="center">“Брестский Государственный технический университет”</p>
+<p align="center">Кафедра ИИТ</p>
+<br><br><br><br><br><br><br>
+<p align="center">Лабораторная работа №4</p>
+<p align="center">По дисциплине “Криптографические методы защиты информации”</p>
+<p align="center">Тема: “PKI, HTTPS и TLS 1.3. Развертывание тестового Удостоверяющего Центра (CA), выпуск сертификатов X.509, настройка HTTPS-сервера и анализ рукопожатия TLS 1.3 в Wireshark”</p>
+<p align="center">Вариант: 4</p>
+<br><br><br><br><br>
+<p align="right">Выполнил:</p>
+<p align="right">Студент 3 курса</p>
+<p align="right">Группы ИИ-27</p>
+<p align="right">Дорошенко М.Д.</p>
+<p align="right">Проверил: Хацкевич А.С.</p>
+<p align="right"></p>
+<br><br><br><br><br>
+<p align="center">Брест 2026</p>
 
-## Шаг 1: 
+# Цель
+
+На собственном тестовом CA выпустить цепочку сертификатов X.509 с расширениями, настроить HTTPS-сервер, принимающий только TLS 1.3, проверить цепочку доверия и отзыв, захватить рукопожатие TLS 1.3 и разобрать его в Wireshark, в том числе после расшифровки через журнал ключей (```SSLKEYLOGFILE```).
+
+# Ход работы
+
+## Подготовительные работы
+
+Для начала установим необходимые утилиты:
+
+* `openssl`
+* `curl`
+* `nginx`
+* `tshark`
+* `tcpdump`
+* `certutil`
+
+После этого, определимся с ОС, где будем выполнять лабу. В моем случае, буду производить "танцы с бубном" на `Ubuntu`.
+
+## Наводим движуху
+
+Вариант для моей лабы:
+
+| №  | Ключ корня / промежуточного CA | Ключ сервера | Группа ECDHE | Набор шифров TLS 1.3         | Задача варианта |
+|---|---|---|---|---|---|
+| 4 | Ed25519 | ECDSA P-384 | P-384 |TLS_AES_256_GCM_SHA384       | mTLS: nginx с ssl_verify_client on и ssl_client_certificate (файл с корнем и промежуточным CA). В захвате покажите CertificateRequest (type 13) и клиентский Certificate. Без клиентского сертификата соединение отвергается |
+
+Далее по пунктам приведу реализацию данной лабы:
+
+## Шаг 1: Корневой CA
 
 ```
 mkdir -p ~/lab4/root ~/lab4/inter ~/lab4/server ~/lab4/client && cd ~/lab4
@@ -7,7 +54,8 @@ openssl genpkey -algorithm ED25519 -out root/root.key && chmod 600 root/root.key
                                                                             openssl req -new -x509 -key root/root.key -days 3650 -subj '/C=BY/O=Lab PKI/CN=Lab Root CA' -addext 'basicConstraints=critical,CA:TRUE,pathlen:1' -addext 'keyUsage=critical,keyCertSign,cRLSign' -addext 'subjectKeyIdentifier=hash' -out root/root.crt
 ```
 
-## Шаг 2: 
+## Шаг 2: Промежуточный CA
+
 ```
 cat > inter/inter.ext <<'EOF'
 basicConstraints=critical,CA:TRUE,pathlen:0
@@ -21,13 +69,13 @@ openssl req -new -key inter/inter.key -subj '/C=BY/O=Lab PKI/CN=Lab Intermediate
 openssl x509 -req -in inter/inter.csr -CA root/root.crt -CAkey root/root.key -CAcreateserial -sha256 -days 1825 -extfile inter/inter.ext -out inter/inter.crt
 ```
 
-Вывод:
+Результат:
 ```
 Certificate request self-signature ok
 subject=C = BY, O = Lab PKI, CN = Lab Intermediate CA
 ```
 
-## Шаг 3:
+## Шаг 3: База промежуточного CA
 
 ```
 cd ~/lab4/inter && touch index.txt && echo 01 > crlnumber && echo 1000 > serial && cd ~/lab4
@@ -53,7 +101,7 @@ commonName       = supplied
 EOF
 ```
 
-## Шаг 4:
+## Шаг 4: Серверный сертификат с SAN
 
 ```
 cat > server/server.ext <<'EOF'
@@ -70,7 +118,7 @@ openssl req -new -key server/server.key -subj '/C=BY/O=Lab PKI/CN=localhost' -ou
 openssl ca -config inter/ca.cnf -batch -in server/server.csr -extfile server/server.ext -notext -out server/server.crt
 ```
 
-Вывод:
+Результат:
 ```
 Using configuration from inter/ca.cnf
 Check that the request matches the signature
@@ -85,7 +133,7 @@ Write out database with 1 new entries
 Database updated
 ```
 
-## Шаг 5:
+## Шаг 5: Проверка цепочки
 
 ```
 openssl verify -CAfile root/root.crt -untrusted inter/inter.crt server/server.crt
@@ -93,7 +141,7 @@ openssl verify -CAfile root/root.crt server/server.crt
 openssl x509 -in server/server.crt -noout -ext subjectAltName,extendedKeyUsage,basicConstraints
 ```
 
-Вывод:
+Результат:
 
 ```
 server/server.crt: OK
@@ -108,7 +156,7 @@ X509v3 Subject Alternative Name:
     DNS:localhost, IP Address:127.0.0.1
 ```
 
-## Шаг 6:
+## Шаг 6: nginx: HTTPS только по TLS 1.3
 
 ```
 cat server/server.crt inter/inter.crt > server/fullchain.pem
@@ -134,8 +182,7 @@ server {
 sudo nginx -t && sudo systemctl restart nginx
 ```
 
-Вывод:
-
+Результат:
 
 ```
 temctl restart nginx
@@ -143,13 +190,13 @@ nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
 nginx: configuration file /etc/nginx/nginx.conf test is successful
 ```
 
-## Шаг 7
+## Шаг 7: Проверка клиентом
 
 ```
 curl -v --cacert root/root.crt https://localhost:8443/
 ```
 
-Вывод:
+Результат:
 
 ```
 * Host localhost:8443 was resolved.
@@ -212,7 +259,7 @@ curl --cacert /tmp/other.crt https://localhost:8443/
 ( sleep 1 ) | openssl s_client -connect localhost:8443 -tls1_2 -CAfile root/root.crt 2>&1 | grep -E 'alert|Protocol'
 ```
 
-Вывод:
+Результат:
 
 ```
 curl: (60) SSL certificate problem: unable to get local issuer certificate
@@ -237,7 +284,7 @@ how to fix it, please visit the web page mentioned above.
     Protocol  : TLSv1.2
 ```
 
-## Шаг 8
+## Шаг 8: Захват рукопожатия и журнал ключей
 
 Терминал 1 (захват):
 
@@ -252,7 +299,7 @@ cd ~/lab4/client
 SSLKEYLOGFILE=$HOME/lab4/client/keys.log curl -sS --cacert ../root/root.crt https://localhost:8443/
 ```
 
-Вывод в клиенте:
+Результат в клиенте:
 
 ```
 tls13 okmatvey@matvey-HP-250-G8-Notebook-PC:~/lab4/client$
@@ -260,10 +307,12 @@ tls13 okmatvey@matvey-HP-250-G8-Notebook-PC:~/lab4/client$
 
 После остановки tcpdump (Ctrl+C) и верните владельца файлу: `sudo chown $USER ~/lab4/client/handshake.pcap`. Проверка: `wc -l keys.log` должен показать не меньше 5 строк.
 
-Вывод:
+Результат:
+```
 5 keys.log
+```
 
-## Шаг 9:
+## Шаг 9: Анализ в Wireshark (`tshark`)
 
 Без журнала ключей:
 
@@ -271,7 +320,7 @@ tls13 okmatvey@matvey-HP-250-G8-Notebook-PC:~/lab4/client$
 tshark -r handshake.pcap -Y tls -T fields -e frame.number -e tls.record.content_type -e tls.handshake.type
 ```
 
-Вывод:
+Результат:
 
 ```
 6	22	1
@@ -290,7 +339,7 @@ tshark -r handshake.pcap -Y tls -T fields -e frame.number -e tls.record.content_
 tshark -r handshake.pcap -o tls.keylog_file:keys.log -Y tls.handshake -T fields -e frame.number -e tls.handshake.type
 ```
 
-Вывод:
+Результат:
 
 ```
 6	1
@@ -310,7 +359,7 @@ tshark -r handshake.pcap -o tls.keylog_file:keys.log -Y 'tls.handshake.type == 1
 tshark -r handshake.pcap -o tls.keylog_file:keys.log -Y 'tls.handshake.type == 15' -T fields -e tls.handshake.sig_hash_alg
 ```
 
-Вывод:
+Результат:
 
 ```
 0x1302	29
@@ -322,7 +371,7 @@ localhost
 0x0403
 ```
 
-## Шаг 10:
+## Шаг 10: Индивидуальные варианты заданий
 
 ```
 curl -v --cacert root/root.crt https://localhost:8443/
@@ -386,4 +435,6 @@ tshark -r handshake.pcap -o tls.keylog_file:keys.log -Y 'tls.handshake.type == 1
 8	2,8,11,15,20
 ```
 
-Вывод: В ходе выполнения данной
+## Вывод
+
+В ходе выполнения данной лабораторной работы я выпустил цепочку сертификатов с расширениями, настроил HTTPS-сервер, проверил цепочку доверия и отзыв, захватил рукопожатие, а также разобрал его в Wireshark.
